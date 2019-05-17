@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+use File::KeePass;
+#use Data::Dumper qw(Dumper);
+use IO::Prompt;
+use Getopt::Long;
+
+my $dbfile = "$ENV{'HOME'}/kp";
+my $passfile='~/.password-store/kp.gpg';
+my $escape_method;
+GetOptions ("escape=s"  => \$escape_method,
+"passfile=s" => \$passfile)
+or die("Error in command line arguments\n");
+
+my $query = $ARGV[$#ARGV];
+if( $#ARGV > 0 ) { $dbfile = $ARGV[$#ARGV - 1];}
+#my $master_pass="".prompt("Password:",-e=>"*",-tty);
+my $master_pass=`gpg2 --no-tty -q -d $passfile`;
+$master_pass =~ s/\n$//;
+my $keyfile;
+
+
+my $k = File::KeePass->new;
+my $dbpass=[ $master_pass, $keyfile ];
+$k->load_db($dbfile, $dbpass); # errors die
+
+
+my @pieces = split '/', $query;
+
+my $entry_title = @pieces[$#pieces];
+my $group='';
+if ($#pieces > 0) {
+  my @group_titles = @pieces[0 .. $#pieces-1];
+  foreach $group_title (@group_titles) {
+    if($group ne '') {
+      $group = $k->find_group({title => $group_title}, [$group], 1);
+    }
+    else {
+      $group = $k->find_group({title => $group_title});
+    }
+    #print "\nsearch $group_title:", Dumper $group;;
+  }
+}
+my $entry;
+if($group ne '') {
+  $entry = $k->find_entry({title => $entry_title}, [$group]);
+}
+else {
+  $entry = $k->find_entry({title => $entry_title});
+}
+
+$k->unlock;
+$k->lock;
+my $password = $k->locked_entry_password($entry);
+if( $escape_method ) {
+  $password =~ s/\$/\\\$/; # mutt escapes
+}
+print $password; # eq 'somepass'
