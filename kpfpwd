@@ -42,17 +42,17 @@ if ($#pieces > 0) {
     #print "\nsearch $group_title:", Dumper $group;;
   }
 }
-my $entry;
+my @entries;
 if(defined $group) {
-  $entry = $k->find_entry({title => $entry_title}, [$group]);
+  @entries = $k->find_entries({title => $entry_title}, [$group]);
 }
 else {
-  $entry = $k->find_entry({title => $entry_title});
+  @entries = $k->find_entries({title => $entry_title});
 }
 
 $k->unlock;
 $k->lock;
-my $password = $k->locked_entry_password($entry);
+my $password = $k->locked_entry_password(@entries[0]);
 if( $escape_method ) {
   $password =~ s/\$/\\\$/; # mutt escapes
 }
