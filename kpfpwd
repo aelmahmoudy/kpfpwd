@@ -27,12 +27,12 @@ $k->load_db($dbfile, $dbpass); # errors die
 my @pieces = split '/', $query;
 
 my $entry_title = @pieces[$#pieces];
-my $group='';
+my $group;
 if ($#pieces > 0) {
   my @group_titles = @pieces[0 .. $#pieces-1];
   foreach $group_title (@group_titles) {
     $group_title ne '' or next;
-    if($group ne '') {
+    if(defined $group) {
       $group = $k->find_group({title => $group_title}, [$group], 1);
     }
     else {
@@ -43,7 +43,7 @@ if ($#pieces > 0) {
   }
 }
 my $entry;
-if($group ne '') {
+if(defined $group) {
   $entry = $k->find_entry({title => $entry_title}, [$group]);
 }
 else {
