@@ -31,12 +31,14 @@ my $group='';
 if ($#pieces > 0) {
   my @group_titles = @pieces[0 .. $#pieces-1];
   foreach $group_title (@group_titles) {
+    $group_title ne '' or next;
     if($group ne '') {
       $group = $k->find_group({title => $group_title}, [$group], 1);
     }
     else {
       $group = $k->find_group({title => $group_title});
     }
+    defined $group or die("$group_title not found");
     #print "\nsearch $group_title:", Dumper $group;;
   }
 }
