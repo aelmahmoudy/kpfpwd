@@ -7,8 +7,10 @@ use Getopt::Long;
 my $dbfile = "$ENV{'HOME'}/kp";
 my $passfile='~/.password-store/kp.gpg';
 my $escape_method;
+my $tag='password';
 GetOptions ("escape=s"  => \$escape_method,
-"passfile=s" => \$passfile)
+"passfile=s" => \$passfile,
+"tag=s" => \$tag)
 or die("Error in command line arguments\n");
 
 my $query = $ARGV[$#ARGV];
@@ -50,9 +52,13 @@ else {
   @entries = $k->find_entries({title => $entry_title});
 }
 
-$k->unlock;
-$k->lock;
-my $password = $k->locked_entry_password(@entries[0]);
+my $password;
+if( $tag eq 'password') {
+  $password = $k->locked_entry_password(@entries[0]);
+}
+else {
+  $password = @entries[0]->{$tag};
+}
 if( $escape_method ) {
   $password =~ s/\$/\\\$/; # mutt escapes
 }
