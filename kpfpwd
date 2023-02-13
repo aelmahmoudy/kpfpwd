@@ -16,7 +16,7 @@ or die("Error in command line arguments\n");
 my $query = $ARGV[$#ARGV];
 if( $#ARGV > 0 ) { $dbfile = $ARGV[$#ARGV - 1];}
 #my $master_pass="".prompt("Password:",-e=>"*",-tty);
-my $master_pass=`gpg2 --no-tty -q -d $passfile`;
+my $master_pass=`gpg --no-tty -q -d $passfile`;
 $master_pass =~ s/\n$//;
 my $keyfile;
 
