@@ -5,18 +5,18 @@ use IO::Prompt;
 use Getopt::Long;
 
 my $dbfile = "$ENV{'HOME'}/kp";
-my $passfile='~/.password-store/kp.gpg';
+my $pwdeval='gpg --no-tty -q -d ~/kp.gpg';
 my $escape_method;
 my $tag='password';
 GetOptions ("escape=s"  => \$escape_method,
-"passfile=s" => \$passfile,
+"pwdeval=s" => \$pwdeval,
 "tag=s" => \$tag)
 or die("Error in command line arguments\n");
 
 my $query = $ARGV[$#ARGV];
 if( $#ARGV > 0 ) { $dbfile = $ARGV[$#ARGV - 1];}
 #my $master_pass="".prompt("Password:",-e=>"*",-tty);
-my $master_pass=`gpg --no-tty -q -d $passfile`;
+my $master_pass=`$pwdeval`;
 $master_pass =~ s/\n$//;
 my $keyfile;
 
