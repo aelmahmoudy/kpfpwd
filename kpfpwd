@@ -4,21 +4,54 @@ use File::KeePass;
 use IO::Prompt;
 use Getopt::Long;
 
-my $dbfile = "$ENV{'HOME'}/kp";
-my $pwdeval='gpg --no-tty -q -d ~/kp.gpg';
+# Default config file path:
+my $confdir = $ENV{'XDG_CONFIG_DIR'} // "$ENV{'HOME'}/.config";
+my $conffile = "$confdir/kpfpwd/config";
+
+# other defaults:
 my $escape_method;
 my $tag='password';
+my $keyfile;
+
+# Get command line switch params:
 GetOptions ("escape=s"  => \$escape_method,
 "pwdeval=s" => \$pwdeval,
+"dbfile=s" => \$dbfile,
+"keyfile=s" => \$keyfile,
+"conffile=s" => \$conffile,
 "tag=s" => \$tag)
 or die("Error in command line arguments\n");
 
+# Query is last argument:
 my $query = $ARGV[$#ARGV];
-if( $#ARGV > 0 ) { $dbfile = $ARGV[$#ARGV - 1];}
-#my $master_pass="".prompt("Password:",-e=>"*",-tty);
-my $master_pass=`$pwdeval`;
+
+# Read configuration file:
+open CONFIG, "$conffile";
+while (<CONFIG>) {
+  chomp;                  # no newline
+  s/#.*//;                # no comments
+  s/^\s+//;               # no leading white
+  s/\s+$//;               # no trailing white
+  next unless length;     # anything left?
+  my ($var, $value) = split(/\s*=\s*/, $_, 2);
+  $conf{$var} = $value;
+}
+close CONFIG;
+$dbfile=$conf{'dbfile'} unless defined $dbfile;
+# Replace ~ in path beginning with user home dir:
+$dbfile =~ s/^~/$ENV{'HOME'}/;
+
+$pwdeval=$conf{'pwdeval'} unless defined $pwdeval;
+$keyfile=$conf{'keyfile'} unless defined $keyfile;
+
+# Read master password from config file:
+my $master_pass=$conf{'master_pass'};
+# .. or run pwdeval to get it:
+$master_pass=`$pwdeval` unless defined $master_pass;
+# .. or as final fallback, prompt user for it:
+length($master_pass) or $master_pass="".prompt("Password:",-e=>"*",-tty);
+# remove trailing newline from master password:
 $master_pass =~ s/\n$//;
-my $keyfile;
 
 
 my $k = File::KeePass->new;
