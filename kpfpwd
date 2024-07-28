@@ -12,6 +12,7 @@ my $conffile = "$confdir/kpfpwd/config";
 my $escape_method;
 my $tag='password';
 my $keyfile;
+my $otp=0;
 
 # Get command line switch params:
 GetOptions ("escape=s"  => \$escape_method,
@@ -19,6 +20,7 @@ GetOptions ("escape=s"  => \$escape_method,
 "dbfile=s" => \$dbfile,
 "keyfile=s" => \$keyfile,
 "conffile=s" => \$conffile,
+"otp" => \$otp,
 "tag=s" => \$tag)
 or die("Error in command line arguments\n");
 
@@ -85,6 +87,12 @@ else {
   @entries = $k->find_entries({title => $entry_title});
 }
 
+# If requesting OTP, and tag is left with default ('password'), then set it to 
+# the 2FA string field:
+if ( $otp and ( $tag eq 'password') ) {
+  $tag='string:2FA-TOTP-SHA256';
+}
+
 my $password;
 if( $tag eq 'password') {
   $password = $k->locked_entry_password(@entries[0]);
@@ -100,5 +108,10 @@ else {
 }
 if( $escape_method ) {
   $password =~ s/\$/\\\$/; # mutt escapes
+}
+
+# If OTP is requested, use oathtool to request OTP:
+if ( $otp ) {
+  $password=`oathtool --totp -b '$password'`;
 }
 print $password; # eq 'somepass'
