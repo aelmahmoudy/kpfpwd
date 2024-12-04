@@ -110,6 +110,11 @@ if( $escape_method ) {
   $password =~ s/\$/\\\$/; # mutt escapes
 }
 
+# Screen copy contents to reg:
+# readreg [reg] [file]
+# Tmux
+# set-buffer "text"
+
 # If OTP is requested, use oathtool to request OTP:
 if ( $otp ) {
   $password=`oathtool --totp -b '$password'`;
