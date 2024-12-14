@@ -9,6 +9,7 @@ my $confdir = $ENV{'XDG_CONFIG_DIR'} // "$ENV{'HOME'}/.config";
 my $conffile = "$confdir/kpfpwd/config";
 
 # other defaults:
+my $default_otp_tag='string:2FA-TOTP-SHA256';
 my $escape_method;
 my $tag='';
 my $keyfile;
@@ -93,7 +94,7 @@ else {
 if ( $tag eq '') {
   # If requesting OTP, then set it to the 2FA string field:
   if ( $otp  ) {
-    $tag='string:2FA-TOTP-SHA256';
+    $tag=$default_otp_tag;
   }
   # otherwise, set to 'password'
   else {
