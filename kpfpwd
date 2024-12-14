@@ -87,6 +87,8 @@ else {
   @entries = $k->find_entries({title => $entry_title});
 }
 
+@entries or  die("$entry_title not found");
+
 # Set a sane default tag if not user specified:
 if ( $tag eq '') {
   # If requesting OTP, then set it to the 2FA string field:
