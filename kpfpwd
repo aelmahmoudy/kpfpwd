@@ -107,8 +107,8 @@ if( $tag eq 'password') {
   $password = $k->locked_entry_password(@entries[0]);
 }
 else {
-  if ( $tag =~ "^string:" ) {
-    $tag =~ s/^string:\s*//;
+  if ( $tag =~ "^string[:/]" ) {
+    $tag =~ s/^string[:\/]\s*//;
     $password = @entries[0]->{strings}->{$tag};
   }
   else {
