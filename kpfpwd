@@ -56,12 +56,13 @@ length($master_pass) or $master_pass="".prompt("Password:",-e=>"*",-tty);
 # remove trailing newline from master password:
 $master_pass =~ s/\n$//;
 
-
+# Load KeePass database:
 my $k = File::KeePass->new;
 my $dbpass=[ $master_pass, $keyfile ];
 $k->load_db($dbfile, $dbpass); # errors die
 
 
+# Search the database for entry queried by user:
 my @pieces = split '/', $query;
 
 my $entry_title = @pieces[$#pieces];
