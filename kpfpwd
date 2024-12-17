@@ -14,6 +14,7 @@ my $escape_method;
 my $tag='';
 my $keyfile;
 my $otp=0;
+my $copy=0;
 
 # Get command line switch params:
 GetOptions ("escape=s"  => \$escape_method,
@@ -22,6 +23,7 @@ GetOptions ("escape=s"  => \$escape_method,
 "keyfile=s" => \$keyfile,
 "conffile=s" => \$conffile,
 "otp" => \$otp,
+"copy" => \$copy,
 "tag=s" => \$tag)
 or die("Error in command line arguments\n");
 
@@ -116,17 +118,24 @@ else {
     $password = @entries[0]->{$tag};
   }
 }
-if( $escape_method ) {
-  $password =~ s/\$/\\\$/; # mutt escapes
-}
-
-# Screen copy contents to reg:
-# readreg [reg] [file]
-# Tmux
-# set-buffer "text"
 
 # If OTP is requested, use oathtool to request OTP:
 if ( $otp ) {
   $password=`oathtool --totp -b '$password'`;
 }
-print $password; # eq 'somepass'
+
+if( $escape_method ) {
+  $password =~ s/\$/\\\$/; # mutt escapes
+}
+
+if ( $copy ) { # Copy result to clipboard/screen/tmux:
+  # Screen copy contents to reg:
+  # readreg [reg] [file]
+  # Tmux:
+  if( ! system("tmux has-session") ) {
+    system("tmux set-buffer $password");
+  }
+}
+else { # print to stdout:
+  print $password; # eq 'somepass'
+}
